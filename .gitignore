@@ -1,0 +1,10 @@
+bin/
+gen/
+internal-mir/
+external-mir/
+mir/
+*.prg
+*.debug.xml
+*.hash
+*.db
+*.barrel

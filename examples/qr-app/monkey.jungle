@@ -1,0 +1,7 @@
+# QR Code Watch App Example
+# Uses the QR Code barrel for encoding and rendering
+
+project.manifest = manifest.xml
+
+# Include the QR Code barrel
+base.barrelPath = $(base.barrelPath);../../barrel.jungle

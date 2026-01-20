@@ -1,0 +1,8 @@
+# Do not hand edit this file. To make changes run the
+# "Configure Monkey Barrels" command.
+
+QRCodeBarrel = [/Users/ari/Dev/Garmin/qr-code-barrel/barrel.jungle]
+base.barrelPath = $(base.barrelPath);$(QRCodeBarrel)
+
+QRCode = [/Users/ari/Dev/Garmin/qr-code-barrel/barrel.jungle]
+base.barrelPath = $(base.barrelPath);$(QRCode)
