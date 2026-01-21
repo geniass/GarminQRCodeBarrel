@@ -76,14 +76,25 @@ class Renderer {
     // Invalidates cache if dimensions changed
     // @param dc Device context
     function calculateLayout(dc as Dc) as Void {
-        var width = dc.getWidth();
-        var height = dc.getHeight();
+        System.println("QR Render: calculateLayout() called");
+
+        // For round screens, the usable square area is smaller
+        // The inscribed square in a circle has side = diameter / sqrt(2) ≈ 0.707 * diameter
+        var deviceSettings = System.getDeviceSettings();
+        var isRound = (deviceSettings.screenShape == System.SCREEN_SHAPE_ROUND);
+        var usableWidth = dc.getWidth();
+        var usableHeight = dc.getHeight();
+        if (isRound) {
+            // rounding 0.707 up to 0.71 seems to fill the screen better
+            usableWidth = Math.floor(dc.getWidth() * 0.71) as Number;
+            usableHeight = usableWidth;
+        }
 
         // Check if dimensions changed - invalidate cache if so
-        if (width != mCachedWidth || height != mCachedHeight) {
+        if (usableWidth != mCachedWidth || usableHeight != mCachedHeight) {
             mCacheValid = false;
-            mCachedWidth = width;
-            mCachedHeight = height;
+            mCachedWidth = usableWidth;
+            mCachedHeight = usableHeight;
         }
 
         var size = mEncoder.getSize();
@@ -92,30 +103,31 @@ class Renderer {
         var totalModules = size + (QUIET_ZONE * 2);
 
         // Calculate module size to fit in available space
-        var maxModuleSizeX = width / totalModules;
-        var maxModuleSizeY = height / totalModules;
-        mModuleSize = maxModuleSizeX < maxModuleSizeY ? maxModuleSizeX : maxModuleSizeY;
+        mModuleSize = Math.floor(usableWidth / totalModules);
 
         // Ensure minimum module size of 1
         if (mModuleSize < 1) {
+            System.println("QR Render: WEIRD: calculated module size < 1, setting to 1");
             mModuleSize = 1;
         }
 
         // Calculate total QR code size
         var qrWidth = totalModules * mModuleSize;
-        var qrHeight = totalModules * mModuleSize;
 
         // Center the QR code
-        mOffsetX = (width - qrWidth) / 2;
-        mOffsetY = (height - qrHeight) / 2;
+        mOffsetX = (dc.getWidth() - qrWidth) / 2;
+        mOffsetY = mOffsetX; // Center vertically in square area
+
     }
 
     // Draw QR code to device context using cached bitmap
     // The expensive O(n²) rendering only happens when cache is invalid
     // @param dc Device context
     function draw(dc as Dc) as Void {
-        // Draw background
-        dc.setColor(mBackgroundColor, mBackgroundColor);
+        // Draw dark background (blends with watch bezel on round screens)
+        // The cached bitmap already contains the white quiet zone
+        // This can be called multiple times after the actual QR code is drawn, without wiping it out
+        dc.setColor(mForegroundColor, mForegroundColor);
         dc.clear();
 
         // Check if we need to rebuild the cache
@@ -204,43 +216,16 @@ class Renderer {
     // @param dc Device context
     // @param label Label text to display below QR code
     function drawWithLabel(dc as Dc, label as String) as Void {
-        var width = dc.getWidth();
-        var height = dc.getHeight();
-        var size = mEncoder.getSize();
-
-        // Calculate available space for QR code (leave room for label)
-        var labelHeight = dc.getFontHeight(Graphics.FONT_TINY);
-        var availableHeight = height - labelHeight - 4; // 4px spacing
-
-        // Calculate module size to fit in available space
-        var totalModules = size + (QUIET_ZONE * 2);
-        var maxModuleSizeX = width / totalModules;
-        var maxModuleSizeY = availableHeight / totalModules;
-        var newModuleSize = maxModuleSizeX < maxModuleSizeY ? maxModuleSizeX : maxModuleSizeY;
-
-        if (newModuleSize < 1) {
-            newModuleSize = 1;
-        }
-
-        // Check if module size changed - invalidate cache if so
-        if (newModuleSize != mCachedModuleSize) {
-            mCacheValid = false;
-        }
-        mModuleSize = newModuleSize;
-
-        var qrSize = totalModules * mModuleSize;
-        mOffsetX = (width - qrSize) / 2;
-        mOffsetY = (availableHeight - qrSize) / 2;
-
         // Draw QR code (uses cached bitmap if valid)
         draw(dc);
 
-        // Draw label
-        dc.setColor(mForegroundColor, Graphics.COLOR_TRANSPARENT);
+        // Draw label at bottom
+        var labelY = mOffsetY + mCachedHeight + 2;
+        dc.setColor(mBackgroundColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
-            width / 2,
-            availableHeight + 2,
-            Graphics.FONT_TINY,
+            mOffsetX + mCachedWidth / 2,
+            labelY,
+            Graphics.FONT_XTINY,
             label,
             Graphics.TEXT_JUSTIFY_CENTER
         );
