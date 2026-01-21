@@ -4,6 +4,9 @@ import Toybox.System;
 
 module QRCode {
 
+// Set to false to disable debug output in production
+const DEBUG = true;
+
 // QR Code renderer class
 // Handles drawing QR code matrix to device context
 // Uses BufferedBitmap caching to avoid expensive per-frame rendering
@@ -118,6 +121,14 @@ class Renderer {
         mOffsetX = (dc.getWidth() - qrWidth) / 2;
         mOffsetY = mOffsetX; // Center vertically in square area
 
+        if (DEBUG) {
+            // print all the dimensions
+            System.println("QR Render: calculateLayout()");
+            System.println("  DC size: " + usableWidth + "x" + usableHeight);
+            System.println("  QR size (modules): " + size);
+            System.println("  Module size: " + mModuleSize);
+            System.println("  Offset: (" + mOffsetX + ", " + mOffsetY + ")");
+        }
     }
 
     // Draw QR code to device context using cached bitmap
@@ -132,14 +143,15 @@ class Renderer {
 
         // Check if we need to rebuild the cache
         if (!mCacheValid || mCachedBitmapRef == null) {
-            System.println("QR Render: cache miss - rebuilding bitmap");
+            if (DEBUG) { System.println("QR Render: cache miss - rebuilding bitmap"); }
             renderToCache();
         } else {
-            System.println("QR Render: cache hit - using cached bitmap");
+            if (DEBUG) { System.println("QR Render: cache hit - using cached bitmap"); }
         }
 
         // Draw cached bitmap to screen (single blit operation)
         if (mCachedBitmapRef != null) {
+            if (DEBUG) { System.println("QR Render: drawing cached bitmap at (" + mOffsetX + ", " + mOffsetY + ")"); }
             dc.drawBitmap(mOffsetX, mOffsetY, mCachedBitmapRef);
         }
     }
@@ -147,22 +159,22 @@ class Renderer {
     // Render QR code to cached BufferedBitmap
     // This is the expensive O(n²) operation - only called when cache is invalid
     private function renderToCache() as Void {
-        System.println("QR Render: renderToCache() start");
+        if (DEBUG) { System.println("QR Render: renderToCache() start"); }
         var matrix = mEncoder.getMatrix();
         var size = mEncoder.getSize();
 
         // Calculate bitmap size (QR code + quiet zone)
         var totalModules = size + (QUIET_ZONE * 2);
         var bitmapSize = totalModules * mModuleSize;
-        System.println("QR Render: bitmap size = " + bitmapSize + "x" + bitmapSize);
+        if (DEBUG) { System.println("QR Render: bitmap size = " + bitmapSize + "x" + bitmapSize); }
 
         if (bitmapSize <= 0) {
-            System.println("QR Render: invalid bitmap size, aborting");
+            if (DEBUG) { System.println("QR Render: invalid bitmap size, aborting"); }
             return;
         }
 
         // Create buffered bitmap with 2-color palette for efficiency
-        System.println("QR Render: creating BufferedBitmap...");
+        if (DEBUG) { System.println("QR Render: creating BufferedBitmap..."); }
         var options = {
             :width => bitmapSize,
             :height => bitmapSize,
@@ -171,22 +183,22 @@ class Renderer {
 
         mCachedBitmapRef = Graphics.createBufferedBitmap(options);
         if (mCachedBitmapRef == null) {
-            System.println("QR Render: createBufferedBitmap returned null");
+            if (DEBUG) { System.println("QR Render: createBufferedBitmap returned null"); }
             return;
         }
-        System.println("QR Render: BufferedBitmap created");
+        if (DEBUG) { System.println("QR Render: BufferedBitmap created"); }
 
         // Get the actual BufferedBitmap from the reference
         mCachedBitmap = mCachedBitmapRef.get() as BufferedBitmap;
         if (mCachedBitmap == null) {
-            System.println("QR Render: get() returned null");
+            if (DEBUG) { System.println("QR Render: get() returned null"); }
             mCachedBitmapRef = null;
             return;
         }
 
         // Get the DC for the buffered bitmap
         var bufDc = mCachedBitmap.getDc();
-        System.println("QR Render: got DC, drawing modules...");
+        if (DEBUG) { System.println("QR Render: got DC, drawing modules..."); }
 
         // Fill background
         bufDc.setColor(mBackgroundColor, mBackgroundColor);
@@ -208,7 +220,7 @@ class Renderer {
 
         mCachedModuleSize = mModuleSize;
         mCacheValid = true;
-        System.println("QR Render: renderToCache() complete");
+        if (DEBUG) { System.println("QR Render: renderToCache() complete"); }
     }
 
     // Draw QR code with optional label below
