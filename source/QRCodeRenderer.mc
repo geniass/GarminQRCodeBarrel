@@ -24,7 +24,10 @@ class Renderer {
     private var mBackgroundColor as ColorValue;
 
     // Quiet zone (border) modules
-    private const QUIET_ZONE = 4;
+    // Standard is 4, but 2 is acceptable for space-constrained displays
+    // Even 1 seems to work fine.
+    // TODO: Maybe make this configurable?
+    private const QUIET_ZONE = 1;
 
     // Cached bitmap for QR code (avoids O(n²) rendering each frame)
     private var mCachedBitmap as BufferedBitmap?;
