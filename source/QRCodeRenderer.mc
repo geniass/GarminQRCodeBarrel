@@ -38,7 +38,6 @@ class Renderer {
     private var mCacheValid as Boolean;
     private var mCachedWidth as Number;
     private var mCachedHeight as Number;
-    private var mCachedModuleSize as Number;
 
     // Constructor
     // @param encoder The QR code encoder
@@ -54,7 +53,6 @@ class Renderer {
         mCacheValid = false;
         mCachedWidth = 0;
         mCachedHeight = 0;
-        mCachedModuleSize = 0;
     }
 
     // Set colors - invalidates cache if colors changed
@@ -218,7 +216,6 @@ class Renderer {
             }
         }
 
-        mCachedModuleSize = mModuleSize;
         mCacheValid = true;
         if (DEBUG) { System.println("QR Render: renderToCache() complete"); }
     }
