@@ -148,9 +148,13 @@ class Renderer {
         }
 
         // Draw cached bitmap to screen (single blit operation)
+        // BufferedBitmapReference is more efficient but only supported with API version 4.0+
         if (mCachedBitmapRef != null) {
-            if (DEBUG) { System.println("QR Render: drawing cached bitmap at (" + mOffsetX + ", " + mOffsetY + ")"); }
+            if (DEBUG) { System.println("QR Render: drawing cached bitmap (ref) at (" + mOffsetX + ", " + mOffsetY + ")"); }
             dc.drawBitmap(mOffsetX, mOffsetY, mCachedBitmapRef);
+        } else if (mCachedBitmap != null) {
+            if (DEBUG) { System.println("QR Render: drawing cached bitmap (direct) at (" + mOffsetX + ", " + mOffsetY + ")"); }
+            dc.drawBitmap(mOffsetX, mOffsetY, mCachedBitmap);
         }
     }
 
@@ -179,19 +183,27 @@ class Renderer {
             :palette => [mBackgroundColor, mForegroundColor] as Array<ColorValue>
         };
 
-        mCachedBitmapRef = Graphics.createBufferedBitmap(options);
-        if (mCachedBitmapRef == null) {
-            if (DEBUG) { System.println("QR Render: createBufferedBitmap returned null"); }
-            return;
-        }
-        if (DEBUG) { System.println("QR Render: BufferedBitmap created"); }
+        // BufferedBitmapReference is more efficient but only supported with API version 4.0+
+        if (Graphics has :createBufferedBitmap) {
+            mCachedBitmapRef = Graphics.createBufferedBitmap(options);
+            if (mCachedBitmapRef == null) {
+                if (DEBUG) { System.println("QR Render: createBufferedBitmap returned null"); }
+                return;
+            }
 
-        // Get the actual BufferedBitmap from the reference
-        mCachedBitmap = mCachedBitmapRef.get() as BufferedBitmap;
-        if (mCachedBitmap == null) {
-            if (DEBUG) { System.println("QR Render: get() returned null"); }
-            mCachedBitmapRef = null;
-            return;
+            mCachedBitmap = mCachedBitmapRef.get() as BufferedBitmap;
+            if (mCachedBitmap == null) {
+                if (DEBUG) { System.println("QR Render: get() returned null"); }
+                mCachedBitmapRef = null;
+                return;
+            }
+        } else {
+            mCachedBitmap = new Graphics.BufferedBitmap(options);
+            if (mCachedBitmap == null) {
+                if (DEBUG) { System.println("QR Render: get() returned null"); }
+                mCachedBitmapRef = null;
+                return;
+            }
         }
 
         // Get the DC for the buffered bitmap
