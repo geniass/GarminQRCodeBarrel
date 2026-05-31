@@ -5,7 +5,7 @@ import Toybox.System;
 module QRCode {
 
 // Set to false to disable debug output in production
-const DEBUG = true;
+const DEBUG = false;
 
 // QR Code renderer class
 // Handles drawing QR code matrix to device context
