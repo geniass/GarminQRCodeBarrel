@@ -1,10 +1,43 @@
+# Connect IQ build output
 bin/
 gen/
+mir/
 internal-mir/
 external-mir/
-mir/
 *.prg
-*.debug.xml
+*.prg.debug.xml
+*.barrel
+*.barrel.debug.xml
+*.iq
 *.hash
 *.db
-*.barrel
+
+# Signing keys — never commit
+developer_key
+developer_key.der
+*.der
+*.pem
+
+# Logs
+*.log
+log.zip
+
+# Eclipse / Connect IQ IDE
+.metadata/
+.settings/
+.project
+.classpath
+*.launch
+RemoteSystemsTempFiles/
+
+# VS Code / Monkey C extension
+.vscode/
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
