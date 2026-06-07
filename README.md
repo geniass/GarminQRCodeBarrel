@@ -27,6 +27,7 @@ A Garmin Connect IQ barrel (library) for generating and rendering QR codes on-de
 - **Quiet zone is 1 module**, not the spec-recommended 4, to maximise usable area on small displays. Scanners have been observed to handle this without issue but it is non-standard.
 - **Consuming apps must restrict their supported device list.** The barrel ships with the full device list, but any app depending on it has to narrow `<iq:products>` in its own `manifest.xml` to the devices it actually targets (the Connect IQ compiler will not auto-intersect).
 - **No raw bitmap export.** The renderer draws to a `Dc`; there is no API to extract the matrix as a PNG or external image.
+- **Colors are caller-controlled.** `setColors(fg, bg)` paints whatever it's given. For scannability you almost always want `COLOR_BLACK` foreground on `COLOR_WHITE` background — even on AMOLED hosts where the surrounding activity-screen theme is dark, because scanners require dark-on-light. Matching the host's dark theme will produce an unscannable negative.
 
 ## Using the barrel
 
