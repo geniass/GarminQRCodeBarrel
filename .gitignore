@@ -5,16 +5,14 @@ mir/
 internal-mir/
 external-mir/
 *.prg
-*.prg.debug.xml
 *.barrel
-*.barrel.debug.xml
 *.iq
+*.debug.xml
 *.hash
 *.db
 
 # Signing keys — never commit
 developer_key
-developer_key.der
 *.der
 *.pem
 
