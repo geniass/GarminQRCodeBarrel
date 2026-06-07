@@ -1,6 +1,8 @@
 import Toybox.Lang;
 import Toybox.Test;
 
+module QRCode {
+
 (:test)
 class ReedSolomonTest {
 
@@ -233,4 +235,5 @@ class ReedSolomonTest {
         // For now, just log the comparison
         return true;
     }
+}
 }

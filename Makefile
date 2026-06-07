@@ -29,7 +29,8 @@ release:
 
 test:
 	$(BARRELTEST) -d $(PRODUCT) -f $(JUNGLE) -o /tmp/$(BARREL_NAME).prg -y $(PRIVATE_KEY) -w --debug-log-level=3
-	$(MONKEYDO) /tmp/$(BARREL_NAME).prg $(PRODUCT) -t
+	@$(MONKEYDO) /tmp/$(BARREL_NAME).prg $(PRODUCT) -t | tee /tmp/$(BARREL_NAME).test.out; \
+		grep -qE "^PASSED" /tmp/$(BARREL_NAME).test.out
 
 # ============================================
 # Example app (consumes the barrel)

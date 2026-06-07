@@ -632,25 +632,25 @@ class Encoder {
     }
 
     // Test helper: Generate generator polynomial (exposed for testing)
-    (:test)
+    (:testHelper)
     function testGenerateGeneratorPolynomial(numECC as Number) as Array<Number> {
         return generateGeneratorPolynomial(numECC);
     }
 
     // Test helper: Perform polynomial division (exposed for testing)
-    (:test)
+    (:testHelper)
     function testPolyDivideRemainder(dividend as Array<Number>, divisor as Array<Number>) as Array<Number> {
         return polyDivideRemainder(dividend, divisor);
     }
 
     // Test helper: GF multiply (exposed for testing)
-    (:test)
+    (:testHelper)
     function testGfMultiply(a as Number, b as Number) as Number {
         return GaloisField.multiply(a, b);
     }
 
     // Test helper: Get ECC bytes for data (exposed for testing)
-    (:test)
+    (:testHelper)
     function testGetECCBytes(dataBytes as Array<Number>) as Array<Number> {
         var numECC = getECCCount();
         var generator = generateGeneratorPolynomial(numECC);

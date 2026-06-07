@@ -2,6 +2,8 @@ import Toybox.Lang;
 import Toybox.Test;
 import Toybox.Graphics;
 
+module QRCode {
+
 (:test)
 class RendererTest {
 
@@ -95,4 +97,5 @@ class RendererTest {
 
         return true;
     }
+}
 }
