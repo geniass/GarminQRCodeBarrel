@@ -79,23 +79,31 @@ class Renderer {
     function calculateLayout(dc as Dc) as Void {
         System.println("QR Render: calculateLayout() called");
 
-        // For round screens, the usable square area is smaller
-        // The inscribed square in a circle has side = diameter / sqrt(2) ≈ 0.707 * diameter
         var deviceSettings = System.getDeviceSettings();
         var isRound = (deviceSettings.screenShape == System.SCREEN_SHAPE_ROUND);
-        var usableWidth = dc.getWidth();
-        var usableHeight = dc.getHeight();
-        if (isRound) {
-            // rounding 0.707 up to 0.71 seems to fill the screen better
-            usableWidth = Math.floor(dc.getWidth() * 0.71) as Number;
+        var dcW = dc.getWidth();
+        var dcH = dc.getHeight();
+        var usableWidth = dcW;
+        var usableHeight = dcH;
+
+        // Full-screen round display: inscribe the QR inside the circle.
+        // The inscribed square in a circle has side = diameter / sqrt(2) ≈ 0.71 * diameter.
+        // Non-square dcs (e.g. multi-field slots already cropped to the circle)
+        // don't need this reduction.
+        if (isRound && dcW == dcH) {
+            usableWidth = Math.floor(dcW * 0.71) as Number;
             usableHeight = usableWidth;
         }
 
+        // The QR matrix is square — fit it inside the smaller dimension so it
+        // doesn't overflow non-square slots.
+        var qrSide = (usableWidth < usableHeight) ? usableWidth : usableHeight;
+
         // Check if dimensions changed - invalidate cache if so
-        if (usableWidth != mCachedWidth || usableHeight != mCachedHeight) {
+        if (qrSide != mCachedWidth || qrSide != mCachedHeight) {
             mCacheValid = false;
-            mCachedWidth = usableWidth;
-            mCachedHeight = usableHeight;
+            mCachedWidth = qrSide;
+            mCachedHeight = qrSide;
         }
 
         var size = mEncoder.getSize();
@@ -104,7 +112,7 @@ class Renderer {
         var totalModules = size + (QUIET_ZONE * 2);
 
         // Calculate module size to fit in available space
-        mModuleSize = Math.floor(usableWidth / totalModules);
+        mModuleSize = Math.floor(qrSide / totalModules);
 
         // Ensure minimum module size of 1
         if (mModuleSize < 1) {
@@ -115,14 +123,15 @@ class Renderer {
         // Calculate total QR code size
         var qrWidth = totalModules * mModuleSize;
 
-        // Center the QR code
-        mOffsetX = (dc.getWidth() - qrWidth) / 2;
-        mOffsetY = mOffsetX; // Center vertically in square area
+        // Center the QR code in the actual dc
+        mOffsetX = (dcW - qrWidth) / 2;
+        mOffsetY = (dcH - qrWidth) / 2;
 
         if (DEBUG) {
             // print all the dimensions
             System.println("QR Render: calculateLayout()");
-            System.println("  DC size: " + usableWidth + "x" + usableHeight);
+            System.println("  DC size: " + dcW + "x" + dcH);
+            System.println("  Usable: " + usableWidth + "x" + usableHeight + " (qrSide=" + qrSide + ")");
             System.println("  QR size (modules): " + size);
             System.println("  Module size: " + mModuleSize);
             System.println("  Offset: (" + mOffsetX + ", " + mOffsetY + ")");
